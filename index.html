@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>HOMECART | Everything You Need</title>
+
+  <meta name="description" content="Shop Himalayan salt, spices, dry fruits, natural herbs and everyday essentials at HOMECART.">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- TOP PROMOTION BAR -->
+  <div class="topbar">
+    ✦ QUALITY PRODUCTS • GREAT PRICES • DELIVERED TO YOUR DOOR ✦
+  </div>
+
+  <!-- HEADER -->
+  <header class="header">
+
+    <a href="#" class="logo">HOME<span>CART</span>.</a>
+
+    <div class="search">
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="Search products, spices, salt..."
+      >
+      <button onclick="searchProducts()">⌕</button>
+    </div>
+
+    <div class="header-actions">
+
+      <button class="action" onclick="showWishlist()">
+        ♡ Wishlist
+      </button>
+
+      <button class="action" onclick="toggleCart()">
+        🛒 Cart
+        <span class="badge" id="cartCount">0</span>
+      </button>
+
+    </div>
+
+  </header>
+
+  <!-- NAVIGATION -->
+  <nav class="nav">
+    <a href="#">Home</a>
+    <a href="#categories">Categories</a>
+    <a href="#products">All Products</a>
+    <a href="#salt">Himalayan Salt</a>
+    <a href="#products">Best Sellers</a>
+    <a href="#footer">Contact Us</a>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero" id="salt">
+
+    <div class="hero-content">
+
+      <span class="tag">
+        NATURAL • AUTHENTIC • QUALITY
+      </span>
+
+      <h1>
+        Bring Nature's Goodness To Your Home.
+      </h1>
+
+      <p>
+        Discover Himalayan salt, everyday essentials,
+        spices, dry fruits and more — all in one place.
+      </p>
+
+      <a href="#products">
+        <button class="primary-btn">
+          SHOP NOW →
+        </button>
+      </a>
+
+    </div>
+
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+
+    <div class="feature">
+      <div class="feature-icon">🚚</div>
+      <strong>Doorstep Delivery</strong>
+      <small>Convenient shopping</small>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">🌿</div>
+      <strong>Quality Products</strong>
+      <small>Carefully selected</small>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">🔒</div>
+      <strong>Secure Shopping</strong>
+      <small>Safe checkout experience</small>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">💬</div>
+      <strong>Customer Support</strong>
+      <small>We're here to help</small>
+    </div>
+
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="section" id="categories">
+
+    <div class="section-heading">
+      <div>
+        <h2>Shop By Category</h2>
+        <p>Explore our carefully selected collections.</p>
+      </div>
+    </div>
+
+    <div class="categories">
+
+      <div class="category" onclick="filterCategory('salt')">
+        <img src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=500&q=80" alt="Himalayan Salt">
+        <strong>Himalayan Salt</strong>
+      </div>
+
+      <div class="category" onclick="filterCategory('spices')">
+        <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=500&q=80" alt="Spices">
+        <strong>Spices & Masala</strong>
+      </div>
+
+      <div class="category" onclick="filterCategory('dry fruits')">
+        <img src="https://images.unsplash.com/photo-1608797178974-15b35a64ede9?auto=format&fit=crop&w=500&q=80" alt="Dry Fruits">
+        <strong>Dry Fruits</strong>
+      </div>
+
+      <div class="category" onclick="filterCategory('herbs')">
+        <img src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=500&q=80" alt="Natural Herbs">
+        <strong>Natural Herbs</strong>
+      </div>
+
+      <div class="category" onclick="filterCategory('snacks')">
+        <img src="https://images.unsplash.com/photo-1621939514649-280e2aaae4b6?auto=format&fit=crop&w=500&q=80" alt="Snacks">
+        <strong>Snacks & Treats</strong>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- PRODUCTS -->
+  <section class="section products-section" id="products">
+
+    <div class="section-heading">
+      <div>
+        <h2>Featured Products</h2>
+        <p>Discover some of our popular picks.</p>
+      </div>
+    </div>
+
+    <div class="filters">
+
+      <button class="filter active" onclick="filterCategory('all',this)">
+        All Products
+      </button>
+
+      <button class="filter" onclick="filterCategory('salt',this)">
+        Himalayan Salt
+      </button>
+
+      <button class="filter" onclick="filterCategory('spices',this)">
+        Spices
+      </button>
+
+      <button class="filter" onclick="filterCategory('dry fruits',this)">
+        Dry Fruits
+      </button>
+
+      <button class="filter" onclick="filterCategory('herbs',this)">
+        Herbs
+      </button>
+
+      <button class="filter" onclick="filterCategory('snacks',this)">
+        Snacks
+      </button>
+
+    </div>
+
+    <div class="products" id="productGrid"></div>
+
+  </section>
+
+  <!-- PROMOTIONAL BANNER -->
+  <section class="banner">
+
+    <div>
+      <h2>Good Things. Great Choices.</h2>
+      <p>
+        Everyday essentials and natural favourites,
+        all under one roof.
+      </p>
+    </div>
+
+    <a href="#products">
+      <button class="primary-btn">
+        EXPLORE STORE →
+      </button>
+    </a>
+
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer" id="footer">
+
+    <div class="footer-grid">
+
+      <div>
+        <h3>HOME<span class="orange">CART</span>.</h3>
+
+        <p>
+          Your one-stop destination for Himalayan salt products,
+          spices, dry fruits, natural essentials and everyday favourites.
+        </p>
+      </div>
+
+      <div>
+        <h4>Quick Links</h4>
+        <a href="#">Home</a>
+        <a href="#categories">Categories</a>
+        <a href="#products">Shop</a>
+      </div>
+
+      <div>
+        <h4>Customer Care</h4>
+        <a href="#">My Account</a>
+        <a href="#">My Orders</a>
+        <a href="#">Contact Us</a>
+      </div>
+
+      <div>
+        <h4>Our Store</h4>
+        <p>Quality Products</p>
+        <p>Easy Shopping</p>
+        <p>Customer Support</p>
+      </div>
+
+    </div>
+
+    <div class="copyright">
+      © 2026 HOMECART. All Rights Reserved.
+    </div>
+
+  </footer>
+
+  <!-- SUPPORT BUTTON -->
+  <button class="whatsapp" onclick="contactSupport()">
+    💬 Support
+  </button>
+
+  <!-- CART PANEL -->
+  <div class="cart-panel" id="cartPanel">
+
+    <div class="cart-head">
+      <h2>Your Cart 🛒</h2>
+
+      <button class="close-cart" onclick="toggleCart()">
+        ×
+      </button>
+    </div>
+
+    <div id="cartItems">
+      <div class="empty">Your cart is empty.</div>
+    </div>
+
+    <div class="cart-total">
+      <span>Total:</span>
+      <span id="cartTotal">₹0</span>
+    </div>
+
+    <button class="checkout" onclick="checkout()">
+      PROCEED TO CHECKOUT
+    </button>
+
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script src="script.js"></script>
+
+</body>
+          </html>
