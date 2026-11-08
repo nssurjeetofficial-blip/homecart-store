@@ -1,6 +1,16 @@
 // ===================================
 // HOMECART - PRODUCT DATABASE
 // ===================================
+// HOMECART SUPABASE CONFIGURATION
+
+const SUPABASE_URL = "https://biieypsncywqtkougaow.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_IzYP74KE3WMegQ0QnMMaag_aCG7MqV_";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
 const products = [
   {
