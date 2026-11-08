@@ -1,10 +1,8 @@
 // ===================================
-// HOMECART - PRODUCT DATABASE
+// HOMECART - SUPABASE CONFIGURATION
 // ===================================
-// HOMECART SUPABASE CONFIGURATION
 
 const SUPABASE_URL = "https://biieypsncywqtkougaow.supabase.co";
-
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_IzYP74KE3WMegQ0QnMMaag_aCG7MqV_";
 
 const supabaseClient = window.supabase.createClient(
@@ -12,7 +10,12 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_PUBLISHABLE_KEY
 );
 
-const products = [
+
+// ===================================
+// DEMO PRODUCTS (FALLBACK)
+// ===================================
+
+const demoProducts = [
   {
     id: 1,
     name: "Himalayan Pink Rock Salt",
@@ -87,6 +90,8 @@ const products = [
   }
 ];
 
+let products = [...demoProducts];
+
 
 // ===================================
 // STORAGE
@@ -97,6 +102,96 @@ let cart = JSON.parse(localStorage.getItem("homecart_cart")) || [];
 let wishlist = JSON.parse(localStorage.getItem("homecart_wishlist")) || [];
 
 let currentCategory = "all";
+
+
+// ===================================
+// HELPER FUNCTIONS
+// ===================================
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
+
+
+// ===================================
+// LOAD PRODUCTS FROM SUPABASE
+// ===================================
+
+async function loadProducts() {
+
+  const grid = document.getElementById("productGrid");
+
+  if (grid) {
+    grid.innerHTML = "<p>Loading products...</p>";
+  }
+
+  try {
+
+    const { data, error } = await supabaseClient
+      .from("products")
+      .select(`
+        id,
+        name,
+        description,
+        price,
+        stock,
+        image_url,
+        category_id,
+        categories(name)
+      `)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+
+      products = data.map(product => {
+
+        const categoryData = Array.isArray(product.categories)
+          ? product.categories[0]
+          : product.categories;
+
+        return {
+          id: product.id,
+          name: product.name,
+          description: product.description || "",
+          category: categoryData?.name?.toLowerCase() || "other",
+          price: Number(product.price),
+          oldPrice: Number(product.price),
+          rating: "★★★★★",
+          image: product.image_url || "",
+          stock: product.stock
+        };
+
+      });
+
+      console.log("HOMECART: Database products loaded.");
+
+    } else {
+
+      products = [...demoProducts];
+
+      console.log("No database products found. Demo products loaded.");
+
+    }
+
+  } catch (error) {
+
+    console.error("Supabase Error:", error.message);
+
+    products = [...demoProducts];
+
+  }
+
+  displayProducts();
+}
 
 
 // ===================================
@@ -139,20 +234,19 @@ function displayProducts(list = products) {
     const isLiked = wishlist.includes(product.id);
 
     return `
-
       <div class="product">
 
         <div class="product-img">
 
           <img
-            src="${product.image}"
-            alt="${product.name}"
+            src="${escapeHTML(product.image)}"
+            alt="${escapeHTML(product.name)}"
             loading="lazy"
           >
 
           <button
             class="heart ${isLiked ? "selected" : ""}"
-            onclick="toggleWishlist(${product.id})"
+            onclick='toggleWishlist(${JSON.stringify(product.id)})'
             aria-label="Add to wishlist"
           >
             ${isLiked ? "♥" : "♡"}
@@ -163,10 +257,10 @@ function displayProducts(list = products) {
         <div class="product-info">
 
           <span class="product-category">
-            ${product.category}
+            ${escapeHTML(product.category)}
           </span>
 
-          <h3>${product.name}</h3>
+          <h3>${escapeHTML(product.name)}</h3>
 
           <div class="rating">
             ${product.rating}
@@ -179,7 +273,7 @@ function displayProducts(list = products) {
 
           <button
             class="add-btn"
-            onclick="addToCart(${product.id})"
+            onclick='addToCart(${JSON.stringify(product.id)})'
           >
             ADD TO CART
           </button>
@@ -187,7 +281,6 @@ function displayProducts(list = products) {
         </div>
 
       </div>
-
     `;
 
   }).join("");
@@ -201,41 +294,31 @@ function displayProducts(list = products) {
 
 function filterCategory(category, button) {
 
-  currentCategory = category;
+  currentCategory = category.toLowerCase();
 
-  const filters = document.querySelectorAll(".filter");
-
-  filters.forEach(item => {
+  document.querySelectorAll(".filter").forEach(item => {
     item.classList.remove("active");
   });
 
   if (button) {
     button.classList.add("active");
-  } else {
-
-    filters.forEach(item => {
-
-      if (item.textContent.toLowerCase().includes(category)) {
-        item.classList.add("active");
-      }
-
-    });
-
   }
 
-  if (category === "all") {
+  if (currentCategory === "all") {
+
     displayProducts(products);
+
   } else {
 
     const filtered = products.filter(product =>
-      product.category === category
+      product.category === currentCategory
     );
 
     displayProducts(filtered);
 
   }
 
-  document.getElementById("products").scrollIntoView({
+  document.getElementById("products")?.scrollIntoView({
     behavior: "smooth"
   });
 
@@ -249,6 +332,8 @@ function filterCategory(category, button) {
 function searchProducts() {
 
   const input = document.getElementById("searchInput");
+
+  if (!input) return;
 
   const search = input.value.trim().toLowerCase();
 
@@ -269,22 +354,27 @@ function searchProducts() {
 
   displayProducts(filtered);
 
-  document.getElementById("products").scrollIntoView({
+  document.getElementById("products")?.scrollIntoView({
     behavior: "smooth"
   });
 
 }
 
 
-// Search on Enter
+// ===================================
+// SEARCH ENTER BUTTON
+// ===================================
 
-document.getElementById("searchInput").addEventListener("keydown", function(event) {
+document.getElementById("searchInput")?.addEventListener(
+  "keydown",
+  function(event) {
 
-  if (event.key === "Enter") {
-    searchProducts();
+    if (event.key === "Enter") {
+      searchProducts();
+    }
+
   }
-
-});
+);
 
 
 // ===================================
@@ -293,14 +383,20 @@ document.getElementById("searchInput").addEventListener("keydown", function(even
 
 function addToCart(productId) {
 
-  const product = products.find(item => item.id === productId);
+  const product = products.find(item =>
+    String(item.id) === String(productId)
+  );
 
   if (!product) return;
 
-  const existing = cart.find(item => item.id === productId);
+  const existing = cart.find(item =>
+    String(item.id) === String(productId)
+  );
 
   if (existing) {
+
     existing.quantity += 1;
+
   } else {
 
     cart.push({
@@ -342,9 +438,11 @@ function updateCart() {
 
   });
 
-  cartCount.textContent = totalItems;
+  if (cartCount) cartCount.textContent = totalItems;
 
-  cartTotal.textContent = "₹" + totalPrice;
+  if (cartTotal) cartTotal.textContent = "₹" + totalPrice;
+
+  if (!cartItems) return;
 
   if (cart.length === 0) {
 
@@ -362,11 +460,11 @@ function updateCart() {
 
     <div class="cart-item">
 
-      <img src="${item.image}" alt="${item.name}">
+      <img src="${escapeHTML(item.image)}" alt="${escapeHTML(item.name)}">
 
       <div class="cart-item-info">
 
-        <strong>${item.name}</strong>
+        <strong>${escapeHTML(item.name)}</strong>
 
         <p>
           ₹${item.price} × ${item.quantity}
@@ -374,7 +472,7 @@ function updateCart() {
 
         <button
           class="remove"
-          onclick="removeFromCart(${item.id})"
+          onclick='removeFromCart(${JSON.stringify(item.id)})'
         >
           Remove
         </button>
@@ -394,7 +492,9 @@ function updateCart() {
 
 function removeFromCart(productId) {
 
-  cart = cart.filter(item => item.id !== productId);
+  cart = cart.filter(item =>
+    String(item.id) !== String(productId)
+  );
 
   saveCart();
 
@@ -409,7 +509,7 @@ function removeFromCart(productId) {
 
 function toggleCart() {
 
-  document.getElementById("cartPanel").classList.toggle("open");
+  document.getElementById("cartPanel")?.classList.toggle("open");
 
 }
 
@@ -420,9 +520,15 @@ function toggleCart() {
 
 function toggleWishlist(productId) {
 
-  if (wishlist.includes(productId)) {
+  const exists = wishlist.some(id =>
+    String(id) === String(productId)
+  );
 
-    wishlist = wishlist.filter(id => id !== productId);
+  if (exists) {
+
+    wishlist = wishlist.filter(id =>
+      String(id) !== String(productId)
+    );
 
   } else {
 
@@ -432,21 +538,39 @@ function toggleWishlist(productId) {
 
   saveWishlist();
 
-  displayProducts(
-    currentCategory === "all"
-      ? products
-      : currentCategory === "search"
-        ? products.filter(product =>
-            product.name.toLowerCase().includes(
-              document.getElementById("searchInput").value.trim().toLowerCase()
-            )
-            ||
-            product.category.toLowerCase().includes(
-              document.getElementById("searchInput").value.trim().toLowerCase()
-            )
-          )
-        : products.filter(product => product.category === currentCategory)
-  );
+  displayCurrentProducts();
+
+}
+
+
+// ===================================
+// REFRESH CURRENT PRODUCT VIEW
+// ===================================
+
+function displayCurrentProducts() {
+
+  let filtered = products;
+
+  if (currentCategory === "search") {
+
+    const search = document.getElementById("searchInput")?.value
+      .trim()
+      .toLowerCase() || "";
+
+    filtered = products.filter(product =>
+      product.name.toLowerCase().includes(search) ||
+      product.category.toLowerCase().includes(search)
+    );
+
+  } else if (currentCategory !== "all") {
+
+    filtered = products.filter(product =>
+      product.category === currentCategory
+    );
+
+  }
+
+  displayProducts(filtered);
 
 }
 
@@ -458,12 +582,12 @@ function toggleWishlist(productId) {
 function showWishlist() {
 
   const favoriteProducts = products.filter(product =>
-    wishlist.includes(product.id)
+    wishlist.some(id => String(id) === String(product.id))
   );
 
   displayProducts(favoriteProducts);
 
-  document.getElementById("products").scrollIntoView({
+  document.getElementById("products")?.scrollIntoView({
     behavior: "smooth"
   });
 
@@ -500,7 +624,7 @@ function contactSupport() {
   const phoneNumber = "919555701386";
 
   const message = encodeURIComponent(
-    "Hello HOMECART! I need help with my order."
+    "Hello MR AMIT JI I NEED YOU BECAUSE YOUR WEBSITE IS MAKE SOME ERROR‼️"
   );
 
   window.open(
@@ -515,6 +639,6 @@ function contactSupport() {
 // INITIALIZE WEBSITE
 // ===================================
 
-displayProducts();
-
 updateCart();
+
+loadProducts();
