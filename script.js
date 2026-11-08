@@ -338,112 +338,77 @@ async function loadProducts() {
 
   }
 
-  displayCurrentRoute();
-}
-
-
 // ===================================
-// SAVE DATA
+// ROUTE HANDLING - FIXED
 // ===================================
 
-function saveCart() {
-  localStorage.setItem("homecart_cart", JSON.stringify(cart));
-}
+function displayCurrentRoute() {
 
-function saveWishlist() {
-  localStorage.setItem("homecart_wishlist", JSON.stringify(wishlist));
-}
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get("product");
 
+  if (productId) {
 
-// ===================================
-// DISPLAY PRODUCTS
-// ===================================
-
-function displayProducts(list = products) {
-
-  const grid = document.getElementById("productGrid");
-
-  if (!grid) return;
-
-  if (list.length === 0) {
-
-    grid.innerHTML = `
-      <div class="no-products">
-        <h3>No products found</h3>
-        <p>Try searching for another product.</p>
-      </div>
-    `;
-
-    return;
-  }
-
-  grid.innerHTML = list.map(product => {
-
-    const isLiked = wishlist.some(id =>
-      String(id) === String(product.id)
+    const product = products.find(item =>
+      String(item.id) === String(productId)
     );
 
-    return `
-      <div class="product">
+    if (product) {
+      renderProductDetails(product);
+      return;
+    }
 
-        <div class="product-img"
-             onclick='openProduct(${JSON.stringify(String(product.id))})'
-             style="cursor:pointer">
+    // Invalid product URL: remove parameter
+    params.delete("product");
 
-          <img
-            src="${escapeHTML(product.image)}"
-            alt="${escapeHTML(product.name)}"
-            loading="lazy"
-          >
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.delete("product");
 
-          <button
-            class="heart ${isLiked ? "selected" : ""}"
-            onclick='event.stopPropagation(); toggleWishlist(${JSON.stringify(product.id)})'
-            aria-label="Add to wishlist"
-          >
-            ${isLiked ? "♥" : "♡"}
-          </button>
+    history.replaceState({}, "", newUrl);
+  }
 
-        </div>
-
-        <div class="product-info">
-
-          <span class="product-category">
-            ${escapeHTML(product.category)}
-          </span>
-
-          <h3
-            onclick='openProduct(${JSON.stringify(String(product.id))})'
-            style="cursor:pointer"
-          >
-            ${escapeHTML(product.name)}
-          </h3>
-
-          <div class="rating">
-            ${product.rating}
-          </div>
-
-          <div class="price">
-            ₹${product.price}
-            <small>₹${product.oldPrice}</small>
-          </div>
-
-          <button
-            class="add-btn"
-            onclick='addToCart(${JSON.stringify(product.id)})'
-          >
-            ADD TO CART
-          </button>
-
-        </div>
-
-      </div>
-    `;
-
-  }).join("");
-
+  displayCurrentProducts();
 }
 
+
+// ===================================
+// REFRESH CURRENT PRODUCT VIEW
+// ===================================
+
+function displayCurrentProducts() {
+
+  let filtered = products;
+
+  if (currentCategory === "search") {
+
+    const search = document.getElementById("searchInput")?.value
+      .trim()
+      .toLowerCase() || "";
+
+    filtered = products.filter(product =>
+      product.name.toLowerCase().includes(search) ||
+      product.category.toLowerCase().includes(search)
+    );
+
+  } else if (
+    currentCategory !== "all" &&
+    currentCategory !== "wishlist"
+  ) {
+
+    filtered = products.filter(product =>
+      product.category === currentCategory
+    );
+
+  } else if (currentCategory === "wishlist") {
+
+    filtered = products.filter(product =>
+      wishlist.some(id => String(id) === String(product.id))
+    );
+
+  }
+
+  displayProducts(filtered);
+}
 
 // ===================================
 // OPEN PRODUCT DETAILS
